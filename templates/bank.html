@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pretium Portal – Bank Reconciliation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f5f9f8;
+    }
+    nav {
+      background-color: #093b2f;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav a {
+      color: white;
+      margin-left: 1rem;
+      text-decoration: none;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background-color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2, h3 {
+      color: #093b2f;
+      margin-bottom: 1rem;
+    }
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #093b2f;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      margin-right: 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #075b43;
+    }
+    .list-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .list {
+      flex: 1 1 45%;
+      background-color: #f9fdfc;
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      border-radius: 4px;
+    }
+    .list h4 {
+      margin-top: 0;
+    }
+    .list ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .list li {
+      padding: 0.25rem 0;
+      border-bottom: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div>Pretium Portal</div>
+    <div>
+      <a href="/dashboard-page">Dashboard</a>
+      <a href="/accounts-page">Accounts</a>
+      <a href="/customers-page">Customers</a>
+      <a href="/vendors-page">Vendors</a>
+      <a href="/invoices-page">Invoices</a>
+      <a href="/bills-page">Bills</a>
+      <a href="/statements-page">Statements</a>
+      <a href="/bank-page">Bank</a>
+      <a href="#" id="logoutLink">Logout</a>
+    </div>
+  </nav>
+  <div class="container">
+    <h2>Bank Reconciliation</h2>
+    <p>Paste your bank transactions as a JSON array of objects with date, amount and description. Example:</p>
+    <pre>[{"date":"2025-07-01","amount":1200,"description":"Rent payment"}]
+    </pre>
+    <textarea id="bankData" placeholder="Paste bank transactions JSON here..."></textarea>
+    <div>
+      <button id="uploadBtn">Upload Transactions</button>
+      <button id="reconcileBtn">Reconcile</button>
+    </div>
+    <div class="list-container" id="reconcileResults" style="display:none;">
+      <div class="list">
+        <h4>Unmatched Bank Transactions</h4>
+        <ul id="unmatchedBankList"></ul>
+      </div>
+      <div class="list">
+        <h4>Unmatched Journal Entries</h4>
+        <ul id="unmatchedJEList"></ul>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.getElementById('uploadBtn').addEventListener('click', async () => {
+      let transactions;
+      try {
+        transactions = JSON.parse(document.getElementById('bankData').value);
+      } catch (err) {
+        alert('Invalid JSON');
+        return;
+      }
+      const res = await fetch('/bank/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(transactions)
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(`${data.imported} transactions uploaded`);
+      } else {
+        alert(data.message || 'Upload failed');
+      }
+    });
+    document.getElementById('reconcileBtn').addEventListener('click', async () => {
+      const res = await fetch('/bank/reconcile', { credentials: 'same-origin' });
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = '/';
+          return;
+        }
+        alert(data.message || 'Reconciliation failed');
+        return;
+      }
+      const bankList = document.getElementById('unmatchedBankList');
+      const jeList = document.getElementById('unmatchedJEList');
+      bankList.innerHTML = '';
+      jeList.innerHTML = '';
+      data.unmatched_bank_transactions.forEach(tx => {
+        const li = document.createElement('li');
+        li.textContent = `${tx.date} — ${tx.amount} — ${tx.description}`;
+        bankList.appendChild(li);
+      });
+      data.unmatched_journal_entries.forEach(je => {
+        const li = document.createElement('li');
+        li.textContent = `${je.date} — ${je.amount} — ${je.description}`;
+        jeList.appendChild(li);
+      });
+      document.getElementById('reconcileResults').style.display = 'flex';
+    });
+    document.getElementById('logoutLink').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await fetch('/logout', { method: 'POST', credentials: 'same-origin' });
+      window.location.href = '/';
+    });
+  </script>
+</body>
+</html>

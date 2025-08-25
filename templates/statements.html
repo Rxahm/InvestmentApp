@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pretium Portal – Financial Statements</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f5f9f8;
+    }
+    nav {
+      background-color: #093b2f;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav a {
+      color: white;
+      margin-left: 1rem;
+      text-decoration: none;
+    }
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      background-color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2, h3 {
+      color: #093b2f;
+      margin-bottom: 0.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background-color: #e3edea;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div>Pretium Portal</div>
+    <div>
+      <a href="/dashboard-page">Dashboard</a>
+      <a href="/accounts-page">Accounts</a>
+      <a href="/customers-page">Customers</a>
+      <a href="/vendors-page">Vendors</a>
+      <a href="/invoices-page">Invoices</a>
+      <a href="/bills-page">Bills</a>
+      <a href="/statements-page">Statements</a>
+      <a href="/bank-page">Bank</a>
+      <a href="#" id="logoutLink">Logout</a>
+    </div>
+  </nav>
+  <div class="container">
+    <h2>Financial Statements</h2>
+    <h3>Income Statement</h3>
+    <table>
+      <tbody id="incomeTable">
+        <!-- Rows will be inserted here -->
+      </tbody>
+    </table>
+    <h3>Balance Sheet</h3>
+    <table>
+      <tbody id="balanceTable">
+        <!-- Rows will be inserted here -->
+      </tbody>
+    </table>
+    <h3>Cash Flow Statement</h3>
+    <table>
+      <tbody id="cashTable">
+        <!-- Rows will be inserted here -->
+      </tbody>
+    </table>
+  </div>
+  <script>
+    async function fetchStatements() {
+      try {
+        const [incRes, balRes, cashRes] = await Promise.all([
+          fetch('/statements/income', { credentials: 'same-origin' }),
+          fetch('/statements/balance', { credentials: 'same-origin' }),
+          fetch('/statements/cashflow', { credentials: 'same-origin' })
+        ]);
+        if (!incRes.ok || !balRes.ok || !cashRes.ok) {
+          if (incRes.status === 401 || balRes.status === 401 || cashRes.status === 401) {
+            window.location.href = '/';
+            return;
+          }
+          throw new Error('Failed to load statements');
+        }
+        const income = await incRes.json();
+        const balance = await balRes.json();
+        const cash = await cashRes.json();
+        // Populate income table
+        const incomeTable = document.getElementById('incomeTable');
+        incomeTable.innerHTML = '';
+        for (const key in income) {
+          const row = document.createElement('tr');
+          const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          row.innerHTML = `<th>${label}</th><td>${income[key]}</td>`;
+          incomeTable.appendChild(row);
+        }
+        // Populate balance table
+        const balanceTable = document.getElementById('balanceTable');
+        balanceTable.innerHTML = '';
+        for (const key in balance) {
+          const row = document.createElement('tr');
+          const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          row.innerHTML = `<th>${label}</th><td>${balance[key]}</td>`;
+          balanceTable.appendChild(row);
+        }
+        // Populate cash flow table
+        const cashTable = document.getElementById('cashTable');
+        cashTable.innerHTML = '';
+        for (const key in cash) {
+          const row = document.createElement('tr');
+          const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          row.innerHTML = `<th>${label}</th><td>${cash[key]}</td>`;
+          cashTable.appendChild(row);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    document.getElementById('logoutLink').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await fetch('/logout', { method: 'POST', credentials: 'same-origin' });
+      window.location.href = '/';
+    });
+    fetchStatements();
+  </script>
+</body>
+</html>

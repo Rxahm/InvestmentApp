@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pretium Portal – Bills</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f5f9f8;
+    }
+    nav {
+      background-color: #093b2f;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav a {
+      color: white;
+      margin-left: 1rem;
+      text-decoration: none;
+    }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background-color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #093b2f;
+      margin-bottom: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.5rem;
+      text-align: left;
+    }
+    th {
+      background-color: #e3edea;
+    }
+    form {
+      margin-top: 1rem;
+    }
+    form input, form select, form textarea, form button {
+      padding: 0.5rem;
+      margin-right: 0.5rem;
+      margin-top: 0.5rem;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    form button {
+      background-color: #093b2f;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      width: auto;
+    }
+    form button:hover {
+      background-color: #075b43;
+    }
+    textarea {
+      min-height: 80px;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div>Pretium Portal</div>
+    <div>
+      <a href="/dashboard-page">Dashboard</a>
+      <a href="/accounts-page">Accounts</a>
+      <a href="/customers-page">Customers</a>
+      <a href="/vendors-page">Vendors</a>
+      <a href="/invoices-page">Invoices</a>
+      <a href="/bills-page">Bills</a>
+      <a href="/statements-page">Statements</a>
+      <a href="/bank-page">Bank</a>
+      <a href="#" id="logoutLink">Logout</a>
+    </div>
+  </nav>
+  <div class="container">
+    <h2>Bills</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Vendor ID</th>
+          <th>Date</th>
+          <th>Total</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="billsBody">
+        <!-- Rows will be inserted here -->
+      </tbody>
+    </table>
+    <h3>Create Bill</h3>
+    <form id="billForm">
+      <label for="billVendor">Vendor:</label>
+      <select id="billVendor" required></select>
+      <label for="billItems">Items (JSON array of objects with description, account, amount):</label>
+      <textarea id="billItems" placeholder='[{"description":"Maintenance","account":"5000","amount":300}]' required></textarea>
+      <button type="submit">Create Bill</button>
+    </form>
+  </div>
+  <script>
+    async function fetchBills() {
+      const res = await fetch('/bills', { credentials: 'same-origin' });
+      if (!res.ok) {
+        if (res.status === 401) {
+          window.location.href = '/';
+          return;
+        }
+        console.error('Failed to load bills');
+        return;
+      }
+      const bills = await res.json();
+      const tbody = document.getElementById('billsBody');
+      tbody.innerHTML = '';
+      bills.forEach(bill => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${bill.id}</td><td>${bill.vendor_id}</td><td>${bill.date}</td><td>${bill.total}</td><td>${bill.status}</td>`;
+        tbody.appendChild(row);
+      });
+    }
+    async function fetchVendorsDropdown() {
+      const res = await fetch('/vendors', { credentials: 'same-origin' });
+      if (res.ok) {
+        const vendors = await res.json();
+        const select = document.getElementById('billVendor');
+        select.innerHTML = '';
+        vendors.forEach(v => {
+          const opt = document.createElement('option');
+          opt.value = v.id;
+          opt.textContent = `${v.id} - ${v.name}`;
+          select.appendChild(opt);
+        });
+      }
+    }
+    document.getElementById('billForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const vendorId = document.getElementById('billVendor').value;
+      let items;
+      try {
+        items = JSON.parse(document.getElementById('billItems').value);
+      } catch (err) {
+        alert('Invalid JSON for items.');
+        return;
+      }
+      const res = await fetch('/bills', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ vendor_id: vendorId, items })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById('billItems').value = '';
+        fetchBills();
+      } else {
+        alert(data.message || 'Error creating bill');
+      }
+    });
+    document.getElementById('logoutLink').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await fetch('/logout', { method: 'POST', credentials: 'same-origin' });
+      window.location.href = '/';
+    });
+    fetchVendorsDropdown();
+    fetchBills();
+  </script>
+</body>
+</html>

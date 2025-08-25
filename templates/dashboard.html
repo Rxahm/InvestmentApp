@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pretium Portal – Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f5f9f8;
+    }
+    nav {
+      background-color: #093b2f;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav a {
+      color: white;
+      margin-left: 1rem;
+      text-decoration: none;
+    }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background-color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #093b2f;
+      margin-bottom: 1rem;
+    }
+    .metric {
+      padding: 0.5rem 0;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <div>Pretium Portal</div>
+    <div>
+      <a href="/dashboard-page">Dashboard</a>
+      <a href="/accounts-page">Accounts</a>
+      <a href="/customers-page">Customers</a>
+      <a href="/vendors-page">Vendors</a>
+      <a href="/invoices-page">Invoices</a>
+      <a href="/bills-page">Bills</a>
+      <a href="/statements-page">Statements</a>
+      <a href="/bank-page">Bank</a>
+      <a href="#" id="logoutLink">Logout</a>
+    </div>
+  </nav>
+  <div class="container">
+    <h2>Dashboard</h2>
+    <div id="metricsContainer">
+      <!-- Metrics will be inserted here -->
+    </div>
+  </div>
+  <script>
+    async function fetchMetrics() {
+      try {
+        const res = await fetch('/dashboard', { credentials: 'same-origin' });
+        if (!res.ok) {
+          if (res.status === 401) {
+            window.location.href = '/';
+            return;
+          }
+          throw new Error('Failed to load dashboard data');
+        }
+        const metrics = await res.json();
+        const container = document.getElementById('metricsContainer');
+        container.innerHTML = '';
+        for (const key in metrics) {
+          const div = document.createElement('div');
+          div.className = 'metric';
+          const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          div.textContent = `${label}: ${metrics[key]}`;
+          container.appendChild(div);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    document.getElementById('logoutLink').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await fetch('/logout', { method: 'POST', credentials: 'same-origin' });
+      window.location.href = '/';
+    });
+    fetchMetrics();
+  </script>
+</body>
+</html>
