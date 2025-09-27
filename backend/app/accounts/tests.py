@@ -1,41 +1,92 @@
-from django.test import TestCase
+"""API integration tests for the accounts app."""
 
-# Create your tests here.
-import requests
+from __future__ import annotations
 
-# 1. Login
-login_url = "http://127.0.0.1:8000/api/login/"
-login_payload = {
-    "username": "admin",  # Example: "admin"
-    "password": "KanoNigeria@2025",  # Example: "yourPassword123"
-    "token": "123456"                  # If you are using 2FA; otherwise leave blank or skip depending on your view
-}
+import base64
 
-login_response = requests.post(login_url, json=login_payload)
+import pyotp
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
 
-if login_response.status_code == 200:
-    access_token = login_response.json().get("access")
-    if not access_token:
-        print("Access token not found in response.")
-        exit()
 
-    print("Login successful!")
-    print("Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc0NTk2MTMxMiwiaWF0IjoxNzQ1ODc0OTEyLCJqdGkiOiJiNWJlYzUwYzNhYWM0OTViYTg3NWE4OWZlY2YyM2MxNCIsInVzZXJfaWQiOjJ9.Ib3v5EFYVxZOk0Ye5XiT6361d3Coyt0H6PcaxKFZxJQ","access":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ1ODc4NTEyLCJpYXQiOjE3NDU4NzQ5MTIsImp0aSI6ImE2M2IwZjVkNzE5NzQ0ODRhZmE0MTQ1Mjc4M2U1YjNkIiwidXNlcl9pZCI6Mn0.PyXtdpuf_69JW3_lSECbhG76MggX6Rm4uXSJx5GV-Qw:", access_token)
+class AuthenticationTests(APITestCase):
+    def setUp(self) -> None:
+        self.register_url = reverse("register")
+        self.login_url = reverse("login")
+        self.profile_url = reverse("profile")
+        self.generate_2fa_url = reverse("generate-2fa")
+        self.password = "StrongPass123!"
 
-    # 2. Access protected endpoint (Generate 2FA QR)
-    generate_2fa_url = "http://127.0.0.1:8000/api/generate-2fa/"
+    def test_user_can_register_and_login_without_2fa(self) -> None:
+        payload = {
+            "username": "alice",
+            "email": "alice@example.com",
+            "password": self.password,
+        }
+        register_response = self.client.post(self.register_url, payload, format="json")
+        self.assertEqual(register_response.status_code, status.HTTP_201_CREATED)
 
-    headers = {
-        "Authorization": f"Bearer {access_token}"
-    }
+        login_response = self.client.post(
+            self.login_url,
+            {"username": payload["username"], "password": self.password},
+            format="json",
+        )
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", login_response.data)
+        self.assertIn("refresh", login_response.data)
 
-    qr_response = requests.get(generate_2fa_url, headers=headers)
+    def test_login_requires_two_factor_token_when_enabled(self) -> None:
+        user = get_user_model().objects.create_user(
+            username="bob",
+            email="bob@example.com",
+            password=self.password,
+            role="owner",
+        )
+        user.two_factor_secret = pyotp.random_base32()
+        user.save(update_fields=["two_factor_secret"])
 
-    if qr_response.status_code == 200:
-        print("2FA QR Info:")
-        print(qr_response.json())
-    else:
-        print("Failed to generate 2FA QR:", qr_response.status_code, qr_response.text)
+        missing_token = self.client.post(
+            self.login_url,
+            {"username": "bob", "password": self.password},
+            format="json",
+        )
+        self.assertEqual(missing_token.status_code, status.HTTP_401_UNAUTHORIZED)
 
-else:
-    print("Login failed:", login_response.status_code, login_response.text)
+        totp = pyotp.TOTP(user.two_factor_secret)
+        with_token = self.client.post(
+            self.login_url,
+            {
+                "username": "bob",
+                "password": self.password,
+                "token": totp.now(),
+            },
+            format="json",
+        )
+        self.assertEqual(with_token.status_code, status.HTTP_200_OK)
+        self.assertIn("access", with_token.data)
+
+    def test_generate_2fa_returns_otpauth_uri_and_qr_code(self) -> None:
+        user = get_user_model().objects.create_user(
+            username="carol",
+            email="carol@example.com",
+            password=self.password,
+            role="owner",
+        )
+
+        login_response = self.client.post(
+            self.login_url,
+            {"username": "carol", "password": self.password},
+            format="json",
+        )
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+        access_token = login_response.data["access"]
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+        response = self.client.get(self.generate_2fa_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("otp_uri", response.data)
+        self.assertIn("qr_code_base64", response.data)
+        # Ensure the QR code is a valid base64 string.
+        base64.b64decode(response.data["qr_code_base64"], validate=True)

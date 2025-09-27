@@ -1,5 +1,9 @@
-django
+Django
+django-cors-headers
+dj-database-url
 djangorestframework
 djangorestframework-simplejwt
 psycopg2-binary
 pyotp
+python-dotenv
+qrcode[pil]

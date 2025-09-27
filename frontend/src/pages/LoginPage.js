@@ -1,67 +1,78 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // We need react-router-dom installed
-import API from '../Services/api'; // Central axios instance
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import API from "../Services/api";
 
 const LoginPage = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [token, setToken] = useState('');
-  const [error, setError] = useState('');
-  const navigate = useNavigate(); // <-- this will help us redirect
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [token, setToken] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+
+    const payload = {
+      username: username.trim(),
+      password,
+    };
+
+    if (token.trim()) {
+      payload.token = token.trim();
+    }
+
     try {
-      const response = await API.post('/login/', { username, password, token });
-      console.log(response.data);
+      const { data } = await API.post("login/", payload);
+      localStorage.setItem("access_token", data.access);
+      if (data.refresh) {
+        localStorage.setItem("refresh_token", data.refresh);
+      }
 
-      // Save access token
-      localStorage.setItem('access_token', response.data.access);
-
-      // Clear form and errors
-      setUsername('');
-      setPassword('');
-      setToken('');
-      setError('');
-
-      // Redirect to Dashboard
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      console.error(err);
-      setError(err.response?.data?.error || "Login failed.");
+      const message = err.response?.data?.error || "Login failed. Check your credentials and 2FA token.";
+      setError(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div style={{ textAlign: 'center', marginTop: '50px' }}>
-      <h1>Login</h1>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      <div style={{ margin: '10px' }}>
+    <div style={{ maxWidth: 360, margin: "80px auto", textAlign: "center" }}>
+      <h1>Sign in</h1>
+      {error && (
+        <p style={{ color: "#b00020", marginTop: 8 }} role="alert">
+          {error}
+        </p>
+      )}
+      <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 24 }}>
         <input
+          autoComplete="username"
           placeholder="Username"
           value={username}
-          onChange={e => setUsername(e.target.value)}
+          onChange={(e) => setUsername(e.target.value)}
+          required
         />
-      </div>
-
-      <div style={{ margin: '10px' }}>
         <input
           type="password"
+          autoComplete="current-password"
           placeholder="Password"
           value={password}
-          onChange={e => setPassword(e.target.value)}
+          onChange={(e) => setPassword(e.target.value)}
+          required
         />
-      </div>
-
-      <div style={{ margin: '10px' }}>
         <input
-          placeholder="2FA Token"
+          placeholder="2FA token (if enabled)"
           value={token}
-          onChange={e => setToken(e.target.value)}
+          onChange={(e) => setToken(e.target.value)}
         />
-      </div>
-
-      <button onClick={handleLogin}>Login</button>
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Signing in..." : "Login"}
+        </button>
+      </form>
     </div>
   );
 };
