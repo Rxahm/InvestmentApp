@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pretium Investments LLC</title>
+  <style>
+    /* Base reset */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #093b2f;
+      background-color: #ffffff;
+    }
+    /* Navigation */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #093b2f;
+      color: #ffffff;
+      padding: 0.8rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    header img {
+      height: 40px;
+      width: auto;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 1.5rem;
+    }
+    nav ul li a {
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.3s;
+    }
+    nav ul li a:hover {
+      color: #c1d7cf;
+    }
+    /* Hero section */
+    .hero {
+      background: url('assets/hero-bg.png') no-repeat center/cover;
+      height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      position: relative;
+      color: #ffffff;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(9,59,47,0.7);
+      /* dark overlay */
+    }
+    .hero-content {
+      position: relative;
+      max-width: 800px;
+      z-index: 1;
+    }
+    .hero-content h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+    .hero-content p {
+      font-size: 1.2rem;
+      margin-bottom: 2rem;
+      color: #e3edea;
+    }
+    .btn-primary {
+      background-color: #0f5a44;
+      color: #ffffff;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+    .btn-primary:hover {
+      background-color: #0c4a37;
+    }
+    /* Section styles */
+    section {
+      padding: 4rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    section:nth-of-type(even) {
+      background-color: #f5f9f8;
+    }
+    .section-title {
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2rem;
+      color: #093b2f;
+    }
+    .about-content {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      font-size: 1rem;
+    }
+    .services {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+    .service-card {
+      background-color: #ffffff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .service-card h3 {
+      margin-bottom: 0.5rem;
+      font-size: 1.2rem;
+      color: #093b2f;
+    }
+    .service-card p {
+      font-size: 0.9rem;
+      color: #355848;
+    }
+    /* CTA section */
+    .cta {
+      background-color: #0f5a44;
+      color: #ffffff;
+      text-align: center;
+      padding: 3rem 2rem;
+      margin-top: 2rem;
+    }
+    .cta h2 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .cta a {
+      background-color: #ffffff;
+      color: #0f5a44;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 1rem;
+      transition: background-color 0.3s;
+    }
+    .cta a:hover {
+      background-color: #e3edea;
+    }
+    /* Footer */
+    footer {
+      background-color: #093b2f;
+      color: #ffffff;
+      padding: 2rem;
+    }
+    footer .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: space-between;
+    }
+    footer h4 {
+      margin-bottom: 1rem;
+    }
+    footer ul {
+      list-style: none;
+    }
+    footer ul li {
+      margin-bottom: 0.5rem;
+    }
+    footer ul li a {
+      color: #c1d7cf;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    footer ul li a:hover {
+      color: #ffffff;
+    }
+    @media (max-width: 768px) {
+      .hero-content h1 {
+        font-size: 2rem;
+      }
+      nav ul {
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header & navigation -->
+  <header>
+    <a href="#"><img src="assets/logo.png" alt="Pretium Investments logo"></a>
+    <nav>
+      <ul>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="https://pretiuminvestment2.onrender.com/">Portal</a></li>
+        <li><a href="https://pretiuminvestment2.onrender.com/courses">Courses</a></li>
+        <li><a href="https://pretiuminvestment2.onrender.com/">Money Game App</a></li>
+        <li><a href="/blogs">Blog</a></li>
+        <li><a href="/projects">Student Projects</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <!-- Hero section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Empowering Your Investments</h1>
+      <p>Transforming real estate and financial education through innovation, insight and integrity.</p>
+      <a href="https://pretiuminvestment2.onrender.com/" class="btn-primary">Enter Portal</a>
+    </div>
+  </section>
+
+  <!-- About section -->
+  <section id="about">
+    <h2 class="section-title">About Us</h2>
+    <div class="about-content">
+      <p><strong>Pretium Investments LLC</strong> is a real estate investment consultancy headquartered in Virginia. We specialize in acquiring, rehabilitating and selling real estate while providing comprehensive bookkeeping, financial reporting and advisory services to our clients.</p>
+      <p>Guided by our core values of transparency, integrity and performance, we leverage technology to deliver efficient operations, insightful data and exceptional customer experiences. Our mission is to empower individuals and small businesses to build wealth through real estate and financial literacy.</p>
+    </div>
+  </section>
+
+  <!-- Services section -->
+  <section id="services">
+    <h2 class="section-title">Our Services</h2>
+    <div class="services">
+      <div class="service-card">
+        <h3>Investment &amp; Acquisition</h3>
+        <p>Identification and acquisition of undervalued properties with strong ROI potential in the Virginia region and beyond.</p>
+      </div>
+      <div class="service-card">
+        <h3>Rehabilitation &amp; Sales</h3>
+        <p>Comprehensive property rehabilitation, project management and sales strategies to maximize value.</p>
+      </div>
+      <div class="service-card">
+        <h3>Financial Reporting</h3>
+        <p>Robust bookkeeping, dashboards and financial statements delivered through our secure client portal.</p>
+      </div>
+      <div class="service-card">
+        <h3>Education &amp; Courses</h3>
+        <p>On‑demand courses and training programs designed to build financial literacy and investment expertise.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Call to action section for courses -->
+  <section class="cta">
+    <h2>Ready to Level Up?</h2>
+    <p>Explore our courses and learn how to manage your finances like a pro.</p>
+    <a href="https://pretiuminvestment2.onrender.com/courses">View Courses</a>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div>
+        <h4>Pretium Investments LLC</h4>
+        <p>Empowering your investments through expertise and technology.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#about">About Us</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="https://pretiuminvestment2.onrender.com/">Portal</a></li>
+          <li><a href="https://pretiuminvestment2.onrender.com/courses">Courses</a></li>
+          <li><a href="https://pretiuminvestment2.onrender.com/">Money Game App</a></li>
+          <li><a href="/blogs">Blog</a></li>
+          <li><a href="/projects">Student Projects</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <p>Email: info@pretiuminvestments.com</p>
+        <p>Phone: +1 (555) 123‑4567</p>
+        <p>Address: 123 Main Street, Richmond, VA 23220</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Placeholder for other scripts if needed -->
+</body>
+</html>

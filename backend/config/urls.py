@@ -12,8 +12,17 @@ def healthcheck(_request):
     return JsonResponse({"status": "ok"})
 
 
+def index(_request):
+    """Default root endpoint to confirm the API is online."""
+    return JsonResponse({
+        "status": "ok",
+        "service": "Pretium Investment API",
+    })
+
+
 urlpatterns = [
+    path("", index, name="index"),
+    path("healthz/", healthcheck, name="healthz"),
     path("admin/", admin.site.urls),
     path("api/", include("app.accounts.urls")),
-    path("healthz/", healthcheck, name="healthz"),
 ]
