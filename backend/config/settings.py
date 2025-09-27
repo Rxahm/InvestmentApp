@@ -22,7 +22,7 @@ SECRET_KEY = os.getenv("SECRET_KEY") or "django-insecure-change-me"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() in {"1", "true", "yes", "on"}
 
-_default_allowed_hosts = "localhost,127.0.0.1"
+_default_allowed_hosts = "localhost,127.0.0.1,pretiuminvestment2.onrender.com"
 ALLOWED_HOSTS: List[str] = [
     host.strip()
     for host in os.getenv("ALLOWED_HOSTS", _default_allowed_hosts).split(",")
