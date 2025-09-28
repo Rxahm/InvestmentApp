@@ -22,14 +22,15 @@ SECRET_KEY = os.getenv("SECRET_KEY") or "django-insecure-change-me"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "False").lower() in {"1", "true", "yes", "on"}
 
-_default_allowed_hosts = "localhost,127.0.0.1,pretiuminvestment2.onrender.com"
+_default_allowed_hosts = "localhost,127.0.0.1,pretiuminvestment2.onrender.com,pretium-portal.onrender.com,pretium-marketing.onrender.com"
 ALLOWED_HOSTS: List[str] = [
     host.strip()
     for host in os.getenv("ALLOWED_HOSTS", _default_allowed_hosts).split(",")
     if host.strip()
 ]
 
-_csrf_trusted = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
+_default_csrf = "https://pretium-portal.onrender.com,https://pretium-marketing.onrender.com"
+_csrf_trusted = os.getenv("CSRF_TRUSTED_ORIGINS", _default_csrf).split(",")
 CSRF_TRUSTED_ORIGINS: List[str] = [origin.strip() for origin in _csrf_trusted if origin.strip()]
 
 # Application definition
@@ -145,7 +146,7 @@ SIMPLE_JWT = {
 # CORS configuration
 _cors_origins = [
     origin.strip()
-    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+    for origin in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000,https://pretium-portal.onrender.com,https://pretium-marketing.onrender.com").split(",")
     if origin.strip()
 ]
 CORS_ALLOWED_ORIGINS = _cors_origins
@@ -158,3 +159,4 @@ if DEBUG:
     REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"] = (
         "rest_framework.permissions.AllowAny",
     )
+
