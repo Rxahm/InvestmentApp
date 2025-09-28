@@ -73,6 +73,11 @@ const LoginPage = () => {
           {isSubmitting ? "Signing in..." : "Login"}
         </button>
       </form>
+      <p style={{ marginTop: 24 }}>
+        Need an account? <span role="link" style={{ color: "#0f5a44", cursor: "pointer" }} onClick={() => navigate("/register")}>
+          Create one now
+        </span>
+      </p>
     </div>
   );
 };

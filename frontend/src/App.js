@@ -3,12 +3,14 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Generate2FA from "./pages/Generate2FA";
+import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/dashboard"
         element={
